@@ -23,7 +23,7 @@ devtools::install_github("imlijunda/abf2load")
 ```
 
 
-# Case srudy experiment set up
+# Case study experiment set up
 Xenopus laevis oocytes were injected with either cRNA of gene "A2" or water 2 days before experiment.
 
 A two electrode voltage clamp rig is used for voltage clamp of the oocytes.
@@ -42,6 +42,7 @@ Two sets of experiments were performed:
 A file index is required for identifing the .abf data files. 
 
 Important information about the format of file index:
+
 - 1. Please DO NOT change or remove any column names except for "RestingVoltage" and "Comments".
 - 2. When a data file contains Gap free type data, put "Gapfree" in the corresbonding row under the "DataType" column, then the select.samples() function will auto filter out the Gap free data.
 - 3. When a data file is NOT to be included in the analysis, put "yes" in the corresbonding row under the "DIsregard?" column, then the select.samples() function will auto filter out the disregarded data.
@@ -129,6 +130,7 @@ for (i in 1:nselected)
 ```
 
 Plot all voltage wave forms (with the same y axis scale):
+
 - Firstly, define voltage step time length in milli seconds (ms)
 
 ![](cursor position 2.png) 
@@ -160,7 +162,7 @@ for (i in 1:nselected){
 ```
 
 - Finally, plot wave forms using the vclamp.plot_channel() function.
-  - The following scriop also gets x and y axis information "xyinfo" by vclamp.plot_xy_info()
+    - The following scriop also gets x and y axis information "xyinfo" by vclamp.plot_xy_info()
 ```{r}
 # Define new plot area and plot margins
 par(mfrow = c(np, np))
@@ -196,9 +198,9 @@ for (i in 1:nselected)
 # Remove unwanted episodes
 To remove the +80 mV episode from the 2nd oocyte:
 
-- experiment design:
-  - Voltage steps: 11 steps, from -120mV to +80mV, +20mV /step
-  - Therefore, the +80 mV episode is the 11th episode
+- Experiment design:
+    - Voltage steps: 11 steps, from -120mV to +80mV, +20mV /step
+    - Therefore, the +80 mV episode is the 11th episode
 ```{r}
 sample_list[[2]] = episode.remove_multi(sample_list[[2]], 11)
 # Then run plot all voltage wave forms again to check
@@ -291,15 +293,15 @@ restrict_div = 1/(TC/Ttotal+restric_factor*TB/Ttotal)
 Run the following script to determine the most stable region (intervals) of the I and V waveforms:
 
 - The mechanism of the following scripts:
-  - step 1: Extract your voltage settings into voltage from rawdata
-    - e.g., the voltage settings for this sample experiment is: -120 -100  -80  -60  -40  -20    0   20   40   60   80
-  - step 2: Find the most stable region in the final 1/5 of step B:
-    - interval_pts: interval length = 150 points = 15 ms
-    - target_voltages: your voltage settings
-    - voltage_threshold: when your actual voltage is within +/- 3.0 mV from your voltage settings, find interval; otherwise, no interval will be found.
-    - restriction_div: use the factor restrict_div you calculated to tell the function that you want the interval to be within the final 1/5 of step B.
-  - step 3: plot the waveforms and the interval is between the 2 dash lines.
-  - step 4: record interval start point and end point. When interval cannot be determined, it will return NA.
+    - step 1: Extract your voltage settings into voltage from rawdata
+        - e.g., the voltage settings for this sample experiment is: -120 -100  -80  -60  -40  -20    0   20   40   60   80
+    - step 2: Find the most stable region in the final 1/5 of step B:
+        - interval_pts: interval length = 150 points = 15 ms
+        - target_voltages: your voltage settings
+        - voltage_threshold: when your actual voltage is within +/- 3.0 mV from your voltage settings, find interval; otherwise, no interval will be found.
+        - restriction_div: use the factor restrict_div you calculated to tell the function that you want the interval to be within the final 1/5 of step B.
+    - step 3: plot the waveforms and the interval is between the 2 dash lines.
+    - step 4: record interval start point and end point. When interval cannot be determined, it will return NA.
 ```{r}
 intervals = data.frame()
 for (i in 1:nselected)
@@ -418,8 +420,8 @@ combined
 # Save extracted data into lists: for data export and direct plotting in R
 Now we want to create several lists:
 - Lists for data export: for export of extracted data into .csv files
-  - The exported data can be used directly for plotting I V curves in your preferred softwares:
-    - e.g. GraphPad Prism, Microsoft excel
+    - The exported data can be used directly for plotting I V curves in your preferred softwares:
+        - e.g. GraphPad Prism, Microsoft excel
 ```{r}
 # 1. a list for buffer names 
   # proc_nameA2N: processed name A2 N
