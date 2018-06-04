@@ -1,6 +1,6 @@
 Package: vcfunc
 Title: TEVC Data Processing Helper Functions
-Version: 0.0.1.0000
+Version: 0.0.1.0001
 Authors@R: person("Yue", "Wu", email = "Yue.Wu@adelaide.edu.au", role = c("aut", "cre"))
 Description: TEVC Data Processing Helper Functions
 Depends: R (>= 3.1.0)
