@@ -53,3 +53,10 @@ episode.remove_multi <- function(channels, episodes_to_remove) {
 episode.remove_single <- function(channel, episodes_to_remove) {
   return(RemoveEpisode(channel, episodes_to_remove))
 }
+
+AbfAvailEpisodeIdx <- function(abf) AvailEpisodeIdx(abf$ByChannel)
+AbfAbailEpisodeName <- function(abf) AvailEpisodeName(abf$ByChannel)
+AbfRemoveEpisode <- function(abf, episode_idx) {
+  abf$ByChannel <- RemoveEpisode(abf$ByChannel, episode_idx)
+  return(abf)
+}
