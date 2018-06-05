@@ -8,7 +8,7 @@
 #' @param allowed_voltage_delta OPTIONAL, allowed maximum deviation of voltage W.R.T protocol setting in the sampling interval.
 #' @param epoch_name OPTIONAL, determines which in which epoch to find the interval.
 #'
-#' @return
+#' @return a vector of 2 numeric describes an interval
 #' @export
 #'
 #' @examples Usually this function does all the work automatically and no extra parameters are needed: intv <- FindSamplingInterval(abf)
@@ -74,6 +74,32 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
   win <- GetWindow(epoch_range, interval_size, best_size, best_pos)
 
   return(range(win))
+}
+
+#' FindAllSampleInterval deos FindSamplingInterval for a list of abf data
+#'
+#' @param abf_list a list of abf data
+#' @param current_chan_id OPTIONAL, current channel id, usually can be identified automatically
+#' @param voltage_chan_id OPTIONAL, voltage channel id, usually can be identified automatically
+#' @param interval_size OPTIONAL, prefered minimum interval size.
+#' @param max_interval_expansion_rate OPTIONAL, determine if the function returns variable interval size.
+#' @param allowed_voltage_delta OPTIONAL, allowed maximum deviation of voltage W.R.T protocol setting in the sampling interval.
+#' @param epoch_name OPTIONAL, determines which in which epoch to find the interval.
+#'
+#' @return a list of intervals found
+#' @export
+#'
+#' @examples
+FindAllSampleInterval <- function(abf_list, current_chan_id = 0, voltage_chan_id = 0,
+                                  interval_size = 0, max_interval_expansion_rate = 1,
+                                  allowed_voltage_delta = 0, epoch_name = "auto") {
+  intv <- list()
+  for (i in 1:length(abf_list))
+    intv[[i]] <- FindSamplingInterval(abf_list[[i]], current_chan_id, voltage_chan_id,
+                                      interval_size, max_interval_expansion_rate,
+                                      allowed_voltage_delta, epoch_name)
+
+  return(intv)
 }
 
 GuessVoltageChan <- function(abf) match("Voltage", abf$ChannelNameGuess)
