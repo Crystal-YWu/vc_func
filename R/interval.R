@@ -1,5 +1,19 @@
+#' FindSamplingInterval finds a suitable intervals for sampling current and voltage data of the loaded abf file
+#'
+#' @param abf data loaded from abf file
+#' @param current_chan_id OPTIONAL, current channel id, usually can be identified automatically
+#' @param voltage_chan_id OPTIONAL, voltage channel id, usually can be identified automatically
+#' @param interval_size OPTIONAL, prefered minimum interval size.
+#' @param max_interval_expansion_rate OPTIONAL, determine if the function returns variable interval size.
+#' @param allowed_voltage_delta OPTIONAL, allowed maximum deviation of voltage W.R.T protocol setting in the sampling interval.
+#' @param epoch_name OPTIONAL, determines which in which epoch to find the interval.
+#'
+#' @return
+#' @export
+#'
+#' @examples Usually this function does all the work automatically and no extra parameters are needed: intv <- FindSamplingInterval(abf)
 FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
-                                 interval_size = 0, max_interval_expension_rate = 1,
+                                 interval_size = 0, max_interval_expansion_rate = 1,
                                  allowed_voltage_delta = 0, epoch_name = "auto") {
 
   #figure out current channel and voltage channel
@@ -18,7 +32,7 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
   #figure out a reasonable allowed voltage error, 5% of incremental level
   if (allowed_voltage_delta == 0)
     allowed_voltage_delta <- DefaultAllowedVoltageDelta(abf, epoch)
-  
+
   #figure out a reasonable min_interval_size, 10ms of scan
   if (interval_size == 0)
     interval_size <- floor(10 / abf$SampleInterval_ms)
@@ -27,22 +41,21 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
   #We expect current to be stable at some point, so we can simply exploit histogram
   #to extract expexted/target current for each episode (the highest frequency samples)
   target_c <- ExpectedEpiCurrent(abf, epoch_range, current_chan_id)
-  chan_v <- abf$ByChannel[[voltage_chan_id]]
   chan_c <- abf$ByChannel[[current_chan_id]]
-  
+
   win <- GetWindow(epoch_range, interval_size, 1, 0)
   best_delta <- abs(as.vector(chan_c[win[1], ]) - target_c)
   best_score <- SimpleSd(chan_c, win)
   best_size <- 1
   best_pos <- 0
-  for (i in 1:max_interval_expension_rate) {
+  for (i in 1:max_interval_expansion_rate) {
     win_size <- i
     win_pos <- 0
     while (TRUE) {
       win <- GetWindow(epoch_range, interval_size, win_size, win_pos)
       if (!CheckWindow(epoch_range, win))
         break
-      delta <- abs(as.vector(chan_c[win[1], ]) - target_c)      
+      delta <- abs(as.vector(chan_c[win[1], ]) - target_c)
       score <- SimpleSd(chan_c, win)
       md_idx <- which.max(best_delta)
       #NOTE:
@@ -78,7 +91,7 @@ GetEpochId <- function(abf, epoch_name) {
     if (is.na(epoch))
       stop("Please provide correct search_epoch. (A-J as in protocol setting)")
   }
-  
+
   return(epoch)
 }
 DefaultAllowedVoltageDelta <- function(abf, epoch) abf$Sections$EpochPerDAC$fEpochLevelInc[epoch] * 0.05
@@ -113,7 +126,7 @@ ExpectedEpochRange <- function(abf, epoch, voltage_chan_id, allowed_voltage_delt
 }
 #Calculate expected current for available episodes
 ExpectedEpiCurrent <- function(abf, search_range, current_chan_id) {
-  
+
   data <- abf$ByChannel[[current_chan_id]]
   n <- ncol(data)
   ret <- rep(0.0, n)
@@ -121,7 +134,7 @@ ExpectedEpiCurrent <- function(abf, search_range, current_chan_id) {
     h <- hist(data[search_range, i], plot = FALSE)
     ret[i] <- h$mids[which.max(h$counts)]
   }
-  
+
   return(ret)
 }
 #Calculate stability of each episode in the given sampling window
