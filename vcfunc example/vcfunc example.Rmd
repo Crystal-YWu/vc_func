@@ -77,7 +77,7 @@ Firstly, we need to load abf2load and vcfunc into R studio
 library(abf2load)
 
 # Install vcfunc
-devtools::install_github("imlijunda/abf2load")
+devtools::install_github("Crystal-YWu/vcfunc")
 
 library(vcfunc)
 ```
