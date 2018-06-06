@@ -7,6 +7,7 @@
 #'
 #' @return Selected samples that satisfy conditions provided
 #' @export
+#' @import tidyverse
 #'
 #' @examples select.samples(loaded_index, c(5:10), "AtNRT1.1", "50mM Na")
 select.samples = function(dataindex, oocyteNo, gene, buffer)
