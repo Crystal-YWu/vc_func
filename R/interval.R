@@ -7,6 +7,8 @@
 #' @param max_interval_expansion_rate OPTIONAL, determine if the function returns variable interval size.
 #' @param allowed_voltage_delta OPTIONAL, allowed maximum deviation of voltage W.R.T protocol setting in the sampling interval.
 #' @param epoch_name OPTIONAL, determines which in which epoch to find the interval.
+#' @param backward_seach OPTIONAL, perform interval search along negative direction
+#' @param backward_search_ratio OPTIONAL, determines how aggressive the backward search is
 #'
 #' @return a vector of 2 numeric describes an interval
 #' @export
@@ -14,7 +16,8 @@
 #' @examples Usually this function does all the work automatically and no extra parameters are needed: intv <- FindSamplingInterval(abf)
 FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
                                  interval_size = 0, max_interval_expansion_rate = 1,
-                                 allowed_voltage_delta = 0, epoch_name = "auto") {
+                                 allowed_voltage_delta = 0, epoch_name = "auto",
+                                 backward_seach = FALSE, backward_search_ratio = 3) {
 
   #figure out current channel and voltage channel
   if (current_chan_id == 0) {
@@ -38,6 +41,12 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
     interval_size <- floor(10 / abf$SampleInterval_ms)
 
   epoch_range <- ExpectedEpochRange(abf, epoch, voltage_chan_id, allowed_voltage_delta)
+  if (backward_seach) {
+    nepoch <- length(epoch_range)
+    nepoch_ptr <- floor(nepoch * (1.0 - 1.0/backward_search_ratio))
+    epoch_range <- epoch_range[nepoch_ptr:nepoch]
+  }
+
   #We expect current to be stable at some point, so we can simply exploit histogram
   #to extract expexted/target current for each episode (the highest frequency samples)
   target_c <- ExpectedEpiCurrent(abf, epoch_range, current_chan_id)
@@ -85,6 +94,8 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
 #' @param max_interval_expansion_rate OPTIONAL, determine if the function returns variable interval size.
 #' @param allowed_voltage_delta OPTIONAL, allowed maximum deviation of voltage W.R.T protocol setting in the sampling interval.
 #' @param epoch_name OPTIONAL, determines which in which epoch to find the interval.
+#' @param backward_seach OPTIONAL, perform interval search along negative direction
+#' @param backward_search_ratio OPTIONAL, determines how aggressive the backward search is
 #'
 #' @return a list of intervals found
 #' @export
@@ -92,12 +103,14 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
 #' @examples
 FindAllSamplingInterval <- function(abf_list, current_chan_id = 0, voltage_chan_id = 0,
                                   interval_size = 0, max_interval_expansion_rate = 1,
-                                  allowed_voltage_delta = 0, epoch_name = "auto") {
+                                  allowed_voltage_delta = 0, epoch_name = "auto",
+                                  backward_seach = FALSE, backward_search_ratio = 3) {
   intv <- list()
   for (i in 1:length(abf_list))
     intv[[i]] <- FindSamplingInterval(abf_list[[i]], current_chan_id, voltage_chan_id,
                                       interval_size, max_interval_expansion_rate,
-                                      allowed_voltage_delta, epoch_name)
+                                      allowed_voltage_delta, epoch_name, backward_seach,
+                                      backward_search_ratio)
 
   return(intv)
 }

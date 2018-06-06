@@ -24,9 +24,9 @@ abf_title <- unlist(selected[, "FileName"])
 PlotAll_IVChannel(abf_list, title_list = abf_title)
 
 #Alternatively, plot individual channel side by side
-PlotAll_Channel(abf_list, 1)
+PlotAll_Channel(abf_list, 1, title_list = abf_title)
 
-PlotAll_Channel(abf_list, 2)
+PlotAll_Channel(abf_list, 2, title_list = abf_title)
 
 #Remove unwanted episodes
 abf_list[[2]] <- AbfRemoveEpisode(abf_list[[2]], 11)
@@ -42,6 +42,19 @@ PlotAll_IVChannelWithIntv(abf_list, intv_list, title_list = abf_title)
 PlotAll_ChannelWithIntv(abf_list, intv_list, 1)
 PlotAll_ChannelWithIntv(abf_list, intv_list, 2)
 
+#It seems that the auto selected sampling interval of Sample 3 is not optimal
+#Perform a backward search for a better interal
+intv_list[[3]] <- FindSamplingInterval(abf_list[[3]], backward_seach = TRUE)
+#Check new intervals
+PlotAll_ChannelWithIntv(abf_list, intv_list, 1)
+PlotAll_ChannelWithIntv(abf_list, intv_list, 2)
+
+#Alternatively, for data consistency, you can perform backward_search for all data
+intv_list <- FindAllSamplingInterval(abf_list, backward_seach = TRUE)
+#Check new intervals
+PlotAll_ChannelWithIntv(abf_list, intv_list, 1)
+PlotAll_ChannelWithIntv(abf_list, intv_list, 2)
+
 #You can also do this for individual abf data
 intv1 <- FindSamplingInterval(abf_list[[1]])
 #Sampling interval is fixed size, however, you can dynamically (and automatically) expand
@@ -51,7 +64,6 @@ intv2 <- FindSamplingInterval(abf_list[[1]], max_interval_expansion_rate = 12)
 Plot_IVChannelWithIntv(abf_list[[1]], intv1)
 Plot_IVChannelWithIntv(abf_list[[1]], intv2)
 
-#There is a small change to intervals, now they're stored in a list for clearer manipulation
 #Manually change interval for 2nd abf
 sample_id <- 2
 intv_start <- 6200
