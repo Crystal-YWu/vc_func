@@ -4,7 +4,7 @@
 \alias{select.samples}
 \title{Select samples from data index}
 \usage{
-\method{select}{samples}(dataindex, oocyteNo, gene, buffer)
+select.samples(dataindex, oocyteNo, gene, buffer)
 }
 \arguments{
 \item{dataindex}{: dataindex loaded from csv}
