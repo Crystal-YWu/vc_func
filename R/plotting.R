@@ -268,6 +268,7 @@ PlotAll_IVChannelWithIntv <- function(abf_list, intv_list, title_list = NULL, un
 #' @return a ggplot object
 #' @export
 #' @import ggplot2
+#' @import tidyverse
 #'
 #' @examples See Example2.R
 PlotAll_IVSummary <- function(df_summary_list, err_bar_width = 1.5) {
