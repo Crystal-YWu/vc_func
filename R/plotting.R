@@ -8,6 +8,7 @@
 #'
 #' @return a ggplot object
 #' @export
+#' @import ggplot2
 #'
 #' @examples Plot_Channel(abf, 2)
 Plot_Channel <- function(abf, chan_id) {
@@ -28,6 +29,7 @@ Plot_Channel <- function(abf, chan_id) {
 #'
 #' @return a ggplot object
 #' @export
+#' @import ggplot2
 #'
 #' @examples intv <- FindSamplingInterval(abf); Plot_ChannelWithIntv(abf, 1, intv)
 Plot_ChannelWithIntv <- function(abf, chan_id, intv) {
@@ -44,6 +46,7 @@ Plot_ChannelWithIntv <- function(abf, chan_id, intv) {
 #'
 #' @return a ggplot object
 #' @export
+#' @import ggplot2
 #'
 #' @examples Plot_IVChannel(abf)
 Plot_IVChannel <- function(abf) {
@@ -61,6 +64,7 @@ Plot_IVChannel <- function(abf) {
 #'
 #' @return a ggplot object
 #' @export
+#' @import ggplot2
 #'
 #' @examples intv <- FindSamplingInterval(abf); Plot_IVChannelWithIntv(abf, intv)
 Plot_IVChannelWithIntv <- function(abf, intv) {
@@ -111,6 +115,8 @@ GetAll_Channel_G <- function(abf_list, chan_id, uniform_y) {
 #'
 #' @return a ggplot object
 #' @export
+#' @import ggplot2
+#' @import cowplot
 #'
 #' @examples abf_list <- abf2.load_in_folder(path, files); PlotAll_Channel(abf_list, 1)
 PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, title_list = NULL, uniform_y = TRUE) {
@@ -140,6 +146,8 @@ PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, title_list = NULL, 
 #'
 #' @return a ggplot object
 #' @export
+#' @import ggplot2
+#' @import cowplot
 #'
 #' @examples See PlotAll_Channel and Plot_ChannelWithIntv
 PlotAll_ChannelWithIntv <- function(abf_list, intv_list, chan_id, label = TRUE, title_list = NULL, uniform_y = TRUE) {
@@ -171,6 +179,8 @@ PlotAll_ChannelWithIntv <- function(abf_list, intv_list, chan_id, label = TRUE, 
 #'
 #' @return a list of ggplot objects
 #' @export
+#' @import ggplot2
+#' @import cowplot
 #'
 #' @examples see Plot_IVChannel and PlotALL_Channel
 PlotAll_IVChannel <- function(abf_list, title_list = NULL, uniform_y = TRUE) {
@@ -199,6 +209,8 @@ PlotAll_IVChannel <- function(abf_list, title_list = NULL, uniform_y = TRUE) {
 #'
 #' @return a list of ggplot objects
 #' @export
+#' @import ggplot2
+#' @import cowplot
 #'
 #' @examples see Plot_IVChannelWithIntv and PlotALL_Channel
 PlotAll_IVChannelWithIntv <- function(abf_list, intv_list, title_list = NULL, uniform_y = TRUE) {

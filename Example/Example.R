@@ -5,7 +5,7 @@ library(vcfunc)
 index <- read_csv("vcfunc example/sample data file index.csv")
 
 N = c(1:20)
-selected <- select.samples(dataindex = index,
+selected <- select_samples(dataindex = index,
                            oocyteNo = N,
                            gene = "A2",
                            buffer = "50N")

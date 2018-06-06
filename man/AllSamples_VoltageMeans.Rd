@@ -4,12 +4,14 @@
 \alias{AllSamples_VoltageMeans}
 \title{AllSamples_VoltageMeans calculates average voltage for every episode within the given interval}
 \usage{
-AllSamples_VoltageMeans(abf_list, intv_list)
+AllSamples_VoltageMeans(abf_list, intv_list, transpose = FALSE)
 }
 \arguments{
 \item{abf_list}{a list of abf data}
 
 \item{intv_list}{a list of intervals}
+
+\item{transpose}{OPTIONAL, determines if transpose the data.frame so episodes become row vector}
 }
 \value{
 a data.frame of the calculated means.

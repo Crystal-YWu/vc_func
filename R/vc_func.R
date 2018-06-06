@@ -1,4 +1,4 @@
-#' Select samples from data index
+#' select_samples selects samples from data index
 #'
 #' @param dataindex : dataindex loaded from csv
 #' @param oocyteNo : oocyte number
@@ -7,9 +7,10 @@
 #'
 #' @return Selected samples that satisfy conditions provided
 #' @export
+#' @import tidyverse
 #'
-#' @examples select.samples(loaded_index, c(5:10), "AtNRT1.1", "50mM Na")
-select.samples = function(dataindex, oocyteNo, gene, buffer)
+#' @examples select_samples(loaded_index, c(5:10), "AtNRT1.1", "50mM Na")
+select_samples <- function(dataindex, oocyteNo, gene, buffer)
 {
 
   dataindex %>%
