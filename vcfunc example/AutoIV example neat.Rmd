@@ -1,0 +1,141 @@
+---
+title: "AutoIV example neat"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+Using "AutoIV example neat" as template to acquire TEVC I V data from .abf files, you will only need to change parameters in stage 1. There is no need to change anything in stage 2-4.
+
+AutoIV is the streamlined I V data acquisition procedure that uses the GitHub packages imlijunda/abf2load and Crystal-YWu/vcfunc.
+
+If you haven't installed abf2load and vcfunc, please refer to "vcfunc example.Rmd" for how to install. Also, "AutoIV example.Rmd" contains more detailed description of how to use AutoIV.
+https://github.com/Crystal-YWu/vcfunc/tree/master/vcfunc%20example
+
+
+# Case study experiment set up
+Please refer to "vcfunc example.Rmd" for experiment set up details.
+
+# AutoIV stage 1: user defined parameters
+Define parameters according to your experiment set up and click run:
+```{r warning=FALSE}
+library(tidyverse)
+library(abf2load)
+library(vcfunc)
+
+index=read_csv('sample data file index.csv')
+folder='sample data'
+
+# Oocyte 1 to 20 were tested with NO3 (N) buffers, while oocyte 21 to 37 were tested with Cl (C) buffers.
+C = c(21:37)
+N = c(1:20)
+
+# For gene "A2" and NO3 buffer tested oocytes "N"
+Gene = "A2"
+OocyteNo = N
+
+# Define list names (user defined names):
+    # 1. a list for buffer names
+    ListBufferNames = "proc_nameA2N"  
+    # 2. a list containing summary (mean and SEM) of all selected oocytes
+    ListMeanSEM = "proc_meanVAA2N"
+    # 3. a list for voltage and current of each oocyte
+    ListIV = "proc_VAA2Ni"
+    # 4. a list for currents of each oocyte
+    ListI = "proc_VAA2Nicurrent"
+
+# Create a list of buffer name as on the data file index
+BufferNameIdx = c("B","1N","5N","10N","25N","50N","100N")
+# Create a list of full buffer names corresponding to the index buffer names
+  BufferNameFull = c("Basal","1mM NO3","5mM NO3","10mM NO3","25mM NO3","50mM NO3","100mM NO3")
+
+# Turn on automatic backward interval search method? TRUE or FALSE
+  # When FALSE, search interval using the default method: automatic most stable interval method
+backward_interval_search = FALSE  
+  
+# Enable plot? TRUE or FALSE
+  # Note that when plot wave form is enabled, the speed of running stage 2 will be very very slow
+enable_plot = FALSE
+```
+
+# AutoIV stage 2: I V acquisition loop
+This stage is a loop which will acquire all your I V data from your .abf files in one run.
+
+Stage 2 could be slow depending on your total file size and whether plot is enabled.
+
+Click run:
+```{r}
+# Create lists using the list names defined in stage 1
+    eval(parse(text=paste(ListBufferNames, " = list()",sep="")))
+    eval(parse(text=paste(ListMeanSEM, " = list()",sep="")))
+    eval(parse(text=paste(ListIV, " = list()",sep="")))
+    eval(parse(text=paste(ListI, " = list()",sep="")))
+
+for (idx in 1:length(BufferNameIdx)){
+  # Select file names from index
+  selected = select_samples(dataindex = index, 
+                            oocyteNo = OocyteNo, 
+                            gene = Gene, 
+                            buffer = BufferNameIdx[[idx]])
+  nselected = nrow(selected)
+  
+  # Load data into R
+  abf_raw = abf2.load_in_folder(folder = "sample data/",
+                                  filename_list = unlist(selected[, "FileName"]))
+  abf_list = abf_raw
+  abf_title = unlist(selected[, "FileName"])
+  
+  # Define “cursor” position using automatic method
+  intv_list = FindAllSamplingInterval(abf_list, backward_seach = backward_interval_search)
+  # Plot the waveforms, and the interval is between the 2 dash lines.
+  if (enable_plot){
+    p = PlotAll_IVChannelWithIntv(abf_list, intv_list, title_list = abf_title)
+    print(p)
+  }
+  
+  # I V data extraction
+    # Calculate the mean V and I values inside the intervals
+  df_mean_voltage = AllSamples_VoltageMeans(abf_list, intv_list)
+  df_mean_current = AllSamples_CurrentMeans(abf_list, intv_list)
+  
+  # Calculate the average V and I values (and SEM) for all selected oocytes:
+  df_summary = AllSamples_IVSummary(abf_list, intv_list)
+  # Extract V and I values (or I only) for each oocyte:
+  individuals = AllSamples_IVRaw(abf_list, intv_list)
+  individualsI = AllSamples_IRaw(abf_list, intv_list)
+  
+  # Save the extracted data into the the 4 predefined lists:
+  eval(parse(text=paste(ListBufferNames, "[[idx]]"," = BufferNameFull[idx]",sep="")))
+  eval(parse(text=paste(ListMeanSEM, "[[idx]]"," = df_summary",sep="")))
+  eval(parse(text=paste(ListIV, "[[idx]]"," = individuals",sep="")))
+  eval(parse(text=paste(ListI, "[[idx]]"," = individualsI",sep="")))
+}
+```
+
+# AutoIV stage 3: export data to .csv files
+Data in .csv files can be copy and paste into other programs for graphing.
+```{r}
+# Export the list containing currents of each oocyte to .csv files
+wd = getwd()
+for (i in 1:length(BufferNameIdx)){
+  filename = paste(wd, "/I data ", 
+                  Gene, 
+                  " ", 
+                  BufferNameFull[[i]], 
+                  ".csv", 
+                  sep="")
+  write.csv(eval(parse(text=paste(ListI, "[[i]]",sep=""))),filename)
+}
+```
+You can also export the other 3 data lists to .csv files.
+
+# AutoIV stage 4: quick I V plot in R
+```{r echo=TRUE}
+# Use the list containing summary data, set name of each element to buffer names
+eval(parse(text=paste("names(", ListMeanSEM, ")"," = BufferNameFull",sep="")))
+# Plot
+PlotAll_IVSummary(get(ListMeanSEM))
+```
+

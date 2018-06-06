@@ -60,7 +60,7 @@ C = c(21:37)
 N = c(1:20)
 
 # Define Gene and buffer (N or C) to be analysed
-  # For ALMT2 N buffers:
+  # For A2 N buffers:
 Gene = "A2"
 OocyteNo = N
 
