@@ -275,23 +275,18 @@ Calculate the average V and I values (and SEM) for all 3 oocytes and combine the
 ```{r}
 df_summary = AllSamples_IVSummary(abf_list, intv_list)
 df_summary
+# NA is automatically removed when calculating mean and SEM
+# Each row represents 1 episode
 ```
 
 Extract V and I values for each oocyte and combine into a list:
 ```{r}
-# 
-individuals = vclamp.individual_channel_mean(df_mean_voltage,
-                                             df_mean_current)
+# I and V for each individual oocytes
+individuals = AllSamples_IVRaw(abf_list, intv_list)
 # If you only want the I data of each oocyte:
-individualsI = vclamp.individual_IorV_mean(currentmeans)
+individualsI = AllSamples_IRaw(abf_list, intv_list)
 ```
 
-```{r}
-# NA is automatically removed when calculating mean and SEM
-combined = vclamp.combine_channel_mean(voltagemeans, currentmeans)
-combined
-# Each row represents 1 episode
-```
 
 # Save extracted data into lists: for data export and direct plotting in R
 Now we want to create several lists:
@@ -313,6 +308,7 @@ proc_VAA2Nicurrent = list()
 proc_meanVAA2N = list()
 ```
 - List for conductance calculation in R:
+    - Conductance calculation is not a feature of abf2load and vcfunc, therefore it is not included in this example.
 ```{r}
 # 4. a list for voltage and current of each oocyte
   # proc_VAA2Ni: processed volt amp A2 N individual oocytes
@@ -325,7 +321,7 @@ Save the extracted data into the 1st element of these 4 lists:
 proc_nameA2N[[1]] = "50 mM NO3"
 
 # Mean and SEM
-proc_meanVAA2N[[1]] = combined
+proc_meanVAA2N[[1]] = df_summary
 
 # I and V of each individual oocyte
 proc_VAA2Ni[[1]] = individuals
@@ -340,6 +336,6 @@ Export data to .csv files:
 write.csv(proc_VAA2Nicurrent[[1]],
           paste(proc_nameA2N[[1]]," individual oocyte currents.csv", sep=""))
 ```
-
+- The data in the .csv file can be used directly for plotting I V curves in your preferred softwares.
 
 
