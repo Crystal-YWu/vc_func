@@ -1,9 +1,15 @@
 Package: vcfunc
 Title: TEVC Data Processing Helper Functions
-Version: 0.0.1.0001
-Authors@R: person("Yue", "Wu", email = "Yue.Wu@adelaide.edu.au", role = c("aut", "cre"))
+Version: 0.0.2.0000
+Authors@R: c( person("Yue", "Wu", email = "Yue.Wu@adelaide.edu.au", role = c("aut", "cre")),
+  person("Junda", "Li", email = "imlijunda@gmail.com", role=c("aut")))
 Description: TEVC .abf Data Processing Helper Functions
 Depends: R (>= 3.1.0)
+Imports:
+  tidyverse,
+  ggplot2,
+  cowplot
+BugReports: https://github.com/Crystal-YWu/vcfunc/issues
 License: MIT
 Encoding: UTF-8
 LazyData: true
