@@ -5,7 +5,7 @@
 \title{PlotAll_ChannelWithIntv plots same channel for all abf data in abf_list as well as intervals}
 \usage{
 PlotAll_ChannelWithIntv(abf_list, intv_list, chan_id, label = TRUE,
-  uniform_y = TRUE)
+  title_list = NULL, uniform_y = TRUE)
 }
 \arguments{
 \item{abf_list}{a list of abf data}
@@ -15,6 +15,8 @@ PlotAll_ChannelWithIntv(abf_list, intv_list, chan_id, label = TRUE,
 \item{chan_id}{channel id to plot}
 
 \item{label}{OPTIONAL, determines if labels are added to subplots}
+
+\item{title_list}{}
 
 \item{uniform_y}{OPTIONAL, determines if y axes are unified to same scale}
 }

@@ -90,7 +90,7 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
 #' @export
 #'
 #' @examples
-FindAllSampleInterval <- function(abf_list, current_chan_id = 0, voltage_chan_id = 0,
+FindAllSamplingInterval <- function(abf_list, current_chan_id = 0, voltage_chan_id = 0,
                                   interval_size = 0, max_interval_expansion_rate = 1,
                                   allowed_voltage_delta = 0, epoch_name = "auto") {
   intv <- list()

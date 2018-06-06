@@ -1,6 +1,3 @@
-library(ggplot2)
-library(cowplot)
-
 .abf_ylab <- function(abf, chan_id)
   paste(abf$ChannelNameGuess[chan_id], "/", abf$ChannelUnit[chan_id])
 
@@ -15,8 +12,8 @@ library(cowplot)
 #' @examples Plot_Channel(abf, 2)
 Plot_Channel <- function(abf, chan_id) {
   g <- ggplot(data = abf$ByChannel[[chan_id]], aes(x = abf$X_ticks))
-  for (i in 1:abf$NumOfEpisodes)
-    g <- g + geom_line(aes_string(y = EpisodeName(i)))
+  for (i in AbfAvailEpisodeName(abf))
+    g <- g + geom_line(aes_string(y = i))
   g <- g + ylab(.abf_ylab(abf, chan_id))
   g <- g + xlab("Time Ticks")
 
@@ -81,8 +78,8 @@ GetAll_UniformYLim <- function(abf_list, chan_id) {
     nepi <- ncol(abf_list[[i]]$ByChannel[[chan_id]])
     mid <- nrow(abf_list[[i]]$ByChannel[[chan_id]]) %/% 2
     mid_val <- as.vector(abf_list[[i]]$ByChannel[[chan_id]][mid, ])
-    upper <- 2 * mid_val[nepi] - mid_val[nepi - 1]
-    lower <- 2 * mid_val[1] - mid_val[2]
+    upper <- 1.5 * mid_val[nepi] - 0.5 * mid_val[nepi - 1]
+    lower <- 1.5 * mid_val[1] - 0.5 * mid_val[2]
     ylimit <- range(ylimit, mid_val, upper, lower)
   }
 
@@ -110,17 +107,22 @@ GetAll_Channel_G <- function(abf_list, chan_id, uniform_y) {
 #' @param chan_id channel id to plot
 #' @param label OPTIONAL, determines if labels are added to subplots
 #' @param uniform_y OPTIONAL, determines if y axes are unified to same scale
+#' @param title_list
 #'
 #' @return a ggplot object
 #' @export
 #'
 #' @examples abf_list <- abf2.load_in_folder(path, files); PlotAll_Channel(abf_list, 1)
-PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, uniform_y = TRUE) {
+PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, title_list = NULL, uniform_y = TRUE) {
   g <- GetAll_Channel_G(abf_list, chan_id, uniform_y)
   n <- length(g)
-  if (label)
+  if (label) {
     for (i in 1:n)
-      g[[i]] <- g[[i]] + ggtitle(as.character(i))
+      if (is.null(title_list))
+        g[[i]] <- g[[i]] + ggtitle(as.character(i))
+      else
+        g[[i]] <- g[[i]] + ggtitle(paste("Sample:", as.character(i), ":", title_list[[i]]))
+  }
   ncols <- ceiling(sqrt(n))
   gg <- plot_grid(plotlist = g, ncol = ncols)
 
@@ -134,17 +136,22 @@ PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, uniform_y = TRUE) {
 #' @param chan_id channel id to plot
 #' @param label OPTIONAL, determines if labels are added to subplots
 #' @param uniform_y OPTIONAL, determines if y axes are unified to same scale
+#' @param title_list
 #'
 #' @return a ggplot object
 #' @export
 #'
 #' @examples See PlotAll_Channel and Plot_ChannelWithIntv
-PlotAll_ChannelWithIntv <- function(abf_list, intv_list, chan_id, label = TRUE, uniform_y = TRUE) {
+PlotAll_ChannelWithIntv <- function(abf_list, intv_list, chan_id, label = TRUE, title_list = NULL, uniform_y = TRUE) {
   g <- GetAll_Channel_G(abf_list, chan_id, uniform_y)
   n <- length(g)
-  if (label)
+  if (label) {
     for (i in 1:n)
-      g[[i]] <- g[[i]] + ggtitle(as.character(i))
+      if (is.null(title_list))
+        g[[i]] <- g[[i]] + ggtitle(as.character(i))
+      else
+        g[[i]] <- g[[i]] + ggtitle(paste("Sample:", as.character(i), ":", title_list[[i]]))
+  }
   for (i in 1:n) {
     g[[i]] <- g[[i]] +
       geom_vline(xintercept = intv_list[[i]][1], linetype = "dotted") +
@@ -216,3 +223,4 @@ PlotAll_IVChannelWithIntv <- function(abf_list, intv_list, title_list = NULL, un
 
   gg
 }
+
