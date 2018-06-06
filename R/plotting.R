@@ -121,7 +121,7 @@ PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, title_list = NULL, 
       if (is.null(title_list))
         g[[i]] <- g[[i]] + ggtitle(as.character(i))
       else
-        g[[i]] <- g[[i]] + ggtitle(paste("Sample:", as.character(i), ":", title_list[[i]]))
+        g[[i]] <- g[[i]] + ggtitle(paste0("No.", as.character(i), " : ", title_list[[i]]))
   }
   ncols <- ceiling(sqrt(n))
   gg <- plot_grid(plotlist = g, ncol = ncols)
@@ -150,7 +150,7 @@ PlotAll_ChannelWithIntv <- function(abf_list, intv_list, chan_id, label = TRUE, 
       if (is.null(title_list))
         g[[i]] <- g[[i]] + ggtitle(as.character(i))
       else
-        g[[i]] <- g[[i]] + ggtitle(paste("Sample:", as.character(i), ":", title_list[[i]]))
+        g[[i]] <- g[[i]] + ggtitle(paste0("No.", as.character(i), " : ", title_list[[i]]))
   }
   for (i in 1:n) {
     g[[i]] <- g[[i]] +

@@ -6,7 +6,8 @@
 \usage{
 FindAllSamplingInterval(abf_list, current_chan_id = 0, voltage_chan_id = 0,
   interval_size = 0, max_interval_expansion_rate = 1,
-  allowed_voltage_delta = 0, epoch_name = "auto")
+  allowed_voltage_delta = 0, epoch_name = "auto", backward_seach = FALSE,
+  backward_search_ratio = 3)
 }
 \arguments{
 \item{abf_list}{a list of abf data}
@@ -22,6 +23,10 @@ FindAllSamplingInterval(abf_list, current_chan_id = 0, voltage_chan_id = 0,
 \item{allowed_voltage_delta}{OPTIONAL, allowed maximum deviation of voltage W.R.T protocol setting in the sampling interval.}
 
 \item{epoch_name}{OPTIONAL, determines which in which epoch to find the interval.}
+
+\item{backward_seach}{OPTIONAL, perform interval search along negative direction}
+
+\item{backward_search_ratio}{OPTIONAL, determines how aggressive the backward search is}
 }
 \value{
 a list of intervals found
