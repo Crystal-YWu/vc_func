@@ -106,8 +106,8 @@ AllSamples_IVRaw <- function(abf_list, intv_list){
 
   ret <- list()
   n <- length(abf_list)
-  current <- AllSamples_CurrentMeans(abf_list, intv_list)
-  voltage <- AllSamples_VoltageMeans(abf_list, intv_list)
+  current <- AllSamples_CurrentMeans(abf_list, intv_list, transpose = TRUE)
+  voltage <- AllSamples_VoltageMeans(abf_list, intv_list, transpose = TRUE)
 
   for (i in 1:n) {
     ret[[i]] <- data.frame(voltage[, i], current[, i])
@@ -130,7 +130,7 @@ AllSamples_IRaw <- function(abf_list, intv_list) {
 
   ret <- list()
   n <- length(abf_list)
-  current <- AllSamples_CurrentMeans(abf_list, intv_list)
+  current <- AllSamples_CurrentMeans(abf_list, intv_list, transpose = TRUE)
 
   for (i in 1:n) {
     ret[[i]] <- data.frame(current[, i])
