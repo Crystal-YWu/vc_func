@@ -16,10 +16,11 @@ vcfunc was developed by the author of abf2load to facilitate abf2 data processin
 To obtain abf2load, please use the following link,
 https://github.com/imlijunda/abf2load
 
-Or run the following script:
+Or run the following script to install both abf2load and vcfunc:
 ```{r}
 library(devtools)
 devtools::install_github("imlijunda/abf2load")
+devtools::install_github("Crystal-YWu/vcfunc")
 ```
 
 
@@ -52,6 +53,9 @@ Important information about the format of file index:
 Load "sample data file index.csv" into R studio.
 ```{r}
 library(tidyverse)
+library(abf2load)
+library(vcfunc)
+
 index=read_csv('sample data file index.csv')
 index
 ```
@@ -72,15 +76,6 @@ N = c(1:20)
 # Select file names
 We want to analyse data of "A2" injected oocytes tested with 50 mM NO3 buffer.
 
-Firstly, we need to load abf2load and vcfunc into R studio
-```{r}
-library(abf2load)
-
-# Install vcfunc
-devtools::install_github("Crystal-YWu/vcfunc")
-
-library(vcfunc)
-```
 Select the file names from the data file index with the following properties:
 
 - gene: Oocytes injected with the gene "A2"
