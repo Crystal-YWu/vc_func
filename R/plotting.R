@@ -75,12 +75,36 @@ Plot_IVChannelWithIntv <- function(abf, intv) {
   g
 }
 
-GetAll_UniformYLim <- function(abf_list, chan_id) {
+#' Plot_IVSummary plots a current-voltage summary
+#'
+#' @param df_summary a data.frame can be easily obtained from AllSamples_IVSummary
+#' @param err_bar_width OPTIONAL, width of error bar
+#'
+#' @return a ggplot object
+#' @export
+#' @import ggplot2
+#'
+#' @examples See Example2.R
+Plot_IVSummary <- function(df_summary, err_bar_width = 1.5) {
+  colnames(df_summary) <- c("Voltage", "SEMVoltage", "Current", "SEMCurrent")
+  p <- ggplot(data = df_summary, mapping = aes(x = Voltage, y = Current, group = 1))
+  p <- p + geom_line()
+  p <- p + geom_errorbar(mapping = aes(ymin = Current - SEMCurrent, ymax = Current + SEMCurrent), width = err_bar_width)
+  p <- p + geom_point()
+
+  return(p)
+}
+
+GetAll_UniformYLim <- function(abf_list, chan_id, intv_list = NULL) {
   ylimit = c(0, 0)
   n <- length(abf_list)
   for (i in 1:n) {
     nepi <- ncol(abf_list[[i]]$ByChannel[[chan_id]])
-    mid <- nrow(abf_list[[i]]$ByChannel[[chan_id]]) %/% 2
+    if (is.null(intv_list)) {
+      mid <- nrow(abf_list[[i]]$ByChannel[[chan_id]]) %/% 2
+    } else {
+      mid <- intv_list[[i]][1]
+    }
     mid_val <- as.vector(abf_list[[i]]$ByChannel[[chan_id]][mid, ])
     upper <- 1.5 * mid_val[nepi] - 0.5 * mid_val[nepi - 1]
     lower <- 1.5 * mid_val[1] - 0.5 * mid_val[2]
@@ -89,12 +113,12 @@ GetAll_UniformYLim <- function(abf_list, chan_id) {
 
   return(ylimit)
 }
-GetAll_Channel_G <- function(abf_list, chan_id, uniform_y) {
+GetAll_Channel_G <- function(abf_list, chan_id, uniform_y, intv_list = NULL) {
 
   g <- list()
   n <- length(abf_list)
   if (uniform_y)
-    ylimit <- GetAll_UniformYLim(abf_list, chan_id)
+    ylimit <- GetAll_UniformYLim(abf_list, chan_id, intv_list)
 
   for (i in 1:n) {
     g[[i]] <- Plot_Channel(abf_list[[i]], chan_id)
@@ -151,7 +175,7 @@ PlotAll_Channel <- function(abf_list, chan_id, label = TRUE, title_list = NULL, 
 #'
 #' @examples See PlotAll_Channel and Plot_ChannelWithIntv
 PlotAll_ChannelWithIntv <- function(abf_list, intv_list, chan_id, label = TRUE, title_list = NULL, uniform_y = TRUE) {
-  g <- GetAll_Channel_G(abf_list, chan_id, uniform_y)
+  g <- GetAll_Channel_G(abf_list, chan_id, uniform_y, intv_list)
   n <- length(g)
   if (label) {
     for (i in 1:n)
@@ -236,3 +260,26 @@ PlotAll_IVChannelWithIntv <- function(abf_list, intv_list, title_list = NULL, un
   gg
 }
 
+#' PlotAll_IVSummary plots a list of IVSummary
+#'
+#' @param df_summary_list a list of data.frame. IVSummary can be obtained from AllSamples_IVSummary
+#' @param err_bar_width OPTIONAL, width of error bar
+#'
+#' @return a ggplot object
+#' @export
+#' @import ggplot2
+#'
+#' @examples See Example2.R
+PlotAll_IVSummary <- function(df_summary_list, err_bar_width = 1.5) {
+  #Combine to data.frame
+  df <- bind_rows(df_summary_list, .id = "Buffer")
+  colnames(df) <- c("Buffer", "Voltage", "SEMV", "Current", "SEMC")
+  p <- ggplot(data = df, mapping = aes(x = Voltage, y = Current, color = Buffer))
+  p <- p + geom_line()
+  p <- p + geom_errorbar(mapping = aes(ymin = Current - SEMC, ymax = Current + SEMC), width = err_bar_width)
+  p <- p + geom_point()
+  p <- p + geom_vline(xintercept = 0.0, linetype = "dotted")
+  p <- p + geom_hline(yintercept = 0.0, linetype = "dotted")
+
+  return(p)
+}

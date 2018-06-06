@@ -148,7 +148,7 @@ colSds <- function(df, na.rm = FALSE) {
     n <- nrow(df)
   #Custom implementation for the missing colSds, may not be most effective
   ret <- colMeans(df * df, na.rm = na.rm) - colMeans(df, na.rm = na.rm)^2
-  ret <- sqrt(ret * n / (n -1))
+  ret <- sqrt(ret * n / (n - 1))
 
   return(ret)
 }
@@ -166,7 +166,7 @@ colSds <- function(df, na.rm = FALSE) {
 #' @examples intv_list <- ChangeInterval(intv_list, 1, 6000, 200)
 ChangeInterval <- function(intv_list, sample_id, intv_start, intv_length) {
   intv_list[[sample_id]][1] <- intv_start
-  intv_list[[sample_id]][2] <- intv_start + intv_length -1
+  intv_list[[sample_id]][2] <- intv_start + intv_length - 1
 
   return(intv_list)
 }
