@@ -11,7 +11,7 @@ data_folder <- "vcfunc example/sample data/"
 #Select oocyte to analyse
 index <- read_csv(csv_file)
 N = c(1:20)
-selected <- select.samples(dataindex = index,
+selected <- select_samples(dataindex = index,
                            oocyteNo = N,
                            gene = "A2",
                            buffer = "50N")
