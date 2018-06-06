@@ -44,8 +44,8 @@ A file index is required for identifing the .abf data files.
 Important information about the format of file index:
 
 - 1. Please DO NOT change or remove any column names except for "RestingVoltage" and "Comments".
-- 2. When a data file contains Gap free type data, put "Gapfree" in the corresbonding row under the "DataType" column, then the select.samples() function will auto filter out the Gap free data.
-- 3. When a data file is NOT to be included in the analysis, put "yes" in the corresbonding row under the "DIsregard?" column, then the select.samples() function will auto filter out the disregarded data.
+- 2. When a data file contains Gap free type data, put "Gapfree" in the corresbonding row under the "DataType" column, then the select_samples() function will auto filter out the Gap free data.
+- 3. When a data file is NOT to be included in the analysis, put "yes" in the corresbonding row under the "DIsregard?" column, then the select_samples() function will auto filter out the disregarded data.
 - 4. Any of the column except for "FileName" can be left empty, when the experiment is not as complicated as the experiment in this case study.
 
 
@@ -77,7 +77,7 @@ Firstly, we need to load abf2load and vcfunc into R studio
 library(abf2load)
 
 # Install vcfunc
-devtools::install_github("imlijunda/abf2load")
+devtools::install_github("Crystal-YWu/vcfunc")
 
 library(vcfunc)
 ```
@@ -88,7 +88,7 @@ Select the file names from the data file index with the following properties:
 - buffer: Oocytes tested with 50 mM NO3 buffer (50N)
 ```{r}
 # Select file names from index
-selected = select.samples(dataindex = index, 
+selected = select_samples(dataindex = index, 
                           oocyteNo = N, 
                           gene = "A2", 
                           buffer = "50N")
@@ -98,101 +98,36 @@ nselected = nrow(selected)
 ```
 
 # Load data into R
-Now use the file names we just selected to load the corresponding .abf files from the defined folder path into R studio
+Now use the file names we just selected to load the corresponding .abf files from the defined folder path into R studio, then extract voltage and current channel data of each file into abf_raw.
 ```{r}
 # The selected file names need to be unlisted
-rawdata = abf2.load_in_folder(folder = folder, 
-                              filename = unlist(selected[, "FileName"]))
+abf_raw = abf2.load_in_folder(folder = "sample data/",
+                                filename_list = unlist(selected[, "FileName"]))
+
+# We keep abf_raw as a backup so we can easily restore
+abf_list = abf_raw
+
+abf_title = unlist(selected[, "FileName"])
 ```
 - This could be a slow process depending on the total size of your .abf files. R studio may look stuck while loading data. Please be patient and wait for it to finish
 
-# Extract sample data
-From the rawdata, extract voltage and current channel data of each file into sample_list
-```{r}
-sample_list = list()
-for (i in 1:nselected)
-{
-  sample_list[[i]] = rawdata[[i]]$ByChannel
-}
-```
 
 # Plot voltage and current wave forms
-In order to fit all voltage wave form plots in the same plot window, we need to define plot area np x np.
+
+Plot current and voltage wave forms for each loaded file:
 ```{r}
-# This is a mathematical process which calculates the optimal plot area
-np = 0
-for (i in 1:nselected)
-  if (i^2 >= nselected)
-  {
-    np = i
-    break
-  }
-```
-
-Plot all voltage wave forms (with the same y axis scale):
-
-- Firstly, define voltage step time length in milli seconds (ms)
-
-![](cursor position 2.png) 
-
-```{r}
-Ttotal=1200
-TA=300
-TB=550
-```
-
-- Secondly, find max and min values for wave form y axis.
-```{r}
-yAxisFac1=TA*10+TB*10*0.05
-yAxisFac2=TA*10+TB*10*0.95
-
-MaxyAxis=data.frame()
-for (i in 1:nselected){
-  for (j in 1:2){
-    MaxyAxis[i,j]=max(sample_list[[i]][[j]][yAxisFac1:yAxisFac2,])
-  }
-}
-
-MinyAxis=data.frame()
-for (i in 1:nselected){
-  for (j in 1:2){
-    MinyAxis[i,j]=min(sample_list[[i]][[j]][yAxisFac1:yAxisFac2,])
-  }
-}
-```
-
-- Finally, plot wave forms using the vclamp.plot_channel() function.
-    - The following scriop also gets x and y axis information "xyinfo" by vclamp.plot_xy_info()
-```{r}
-# Define new plot area and plot margins
-par(mfrow = c(np, np))
-par(mar=c(2,2,2,2))
-# Get xyinfo and plot voltage wave forms
-xyinfo = list()
-for (i in 1:nselected)
-{
-  xyinfo[[i]] = vclamp.plot_xy_info (abfdata = rawdata[[i]])
-  vclamp.plot_channel (sample_channels = sample_list[[i]], 
-                       # current channel is 1, voltage is 2
-                       chan_id = 2, 
-                       xy_info = xyinfo[[i]], 
-                       plottitle = i)
-}
+# Plot all loaded abf files
+  # Could be slow depending on how large the list is, note that title_list is optional
+PlotAll_IVChannel(abf_list, title_list = abf_title)
 ```
 - Plotting could be a slow process when you have a lot of files. R studio may look stuck while plotting. Please be patient and wait for it to finish.
 
-Plot current wave forms using the existing "xyinfo"
+Alternatively, plot the same channel of all loaded files side by side
 ```{r}
-par(mfrow = c(np, np))
-par(mar=c(2,2,2,2))
-for (i in 1:nselected)
-{
-  vclamp.plot_channel(sample_channels = sample_list[[i]], 
-		chan_id = 1, 
-		xy_info = xyinfo[[i]], 
-		plottitle = selected$FileName[i])
-}
-# Check plottitle to see why now the plots are labbled with file names
+# Plot all current waveforms
+PlotAll_Channel(abf_list, 1, title_list = abf_title)
+# Plot all voltage waveforms
+PlotAll_Channel(abf_list, 2, title_list = abf_title)
 ```
 
 # Remove unwanted episodes
@@ -202,58 +137,46 @@ To remove the +80 mV episode from the 2nd oocyte:
     - Voltage steps: 11 steps, from -120mV to +80mV, +20mV /step
     - Therefore, the +80 mV episode is the 11th episode
 ```{r}
-sample_list[[2]] = episode.remove_multi(sample_list[[2]], 11)
-# Then run plot all voltage wave forms again to check
-par(mfrow = c(np, np))
-par(mar=c(2,2,2,2))
-for (i in 1:nselected)
-{
-  vclamp.plot_channel(sample_list[[i]], 
-                      2, 
-                      xyinfo[[i]], 
-                      selected$OocyteNumber[i])
-}
+# Remove epi 11 from file 2
+SampleNO = 2
+EpiToRemove = c(11)
+abf_list[[SampleNO]] = AbfRemoveEpisode(abf_list[[SampleNO]], EpiToRemove)
+# Then run plot the wave forms again to check
+Plot_IVChannel(abf_list[[SampleNO]])
 ```
     
 # Remove unwanted files
 To remove all data of the 2nd oocyte:
 ```{r}
 # Remove the 2nd file name from the selected files
-selected=selected[-2,]
+FileToRemove = 2
+selected=selected[-FileToRemove,]
 nselected = nrow(selected)
 # Remove the 2nd oocyte’s data from the V and I channel data list
-sample_list=sample_list[-2]
-# Then run plot all voltage wave forms again to check
-par(mfrow = c(np, np))
-par(mar=c(2,2,2,2))
-for (i in 1:nselected)
-{
-  vclamp.plot_channel(sample_list[[i]], 
-                      2, 
-                      xyinfo[[i]], 
-                      selected$OocyteNumber[i])
-}
+abf_list=abf_list[-FileToRemove]
+# Then run plot all current wave forms again to check
+PlotAll_Channel(abf_list, 1, title_list = abf_title)
 ```
 
 # Restore removed episodes or files
-To restore the removed episodes:
+If only episodes have been removed, restore all removed episode by resetting abf_list.
 ```{r}
-sample_list = list()
-for (i in 1:nselected)
-{
-  sample_list[[i]] = rawdata[[i]]$ByChannel
-}
+abf_list = abf_raw
 ```
-To restore the removed oocytes:
+
+To restore all removed episodes and files, just reload raw data again.
 ```{r}
-selected = select.samples(index, N, "A2", "50N")
+selected = select_samples(dataindex = index, 
+                          oocyteNo = N, 
+                          gene = "A2", 
+                          buffer = "50N")
 nselected = nrow(selected)
-sample_list = list()
-for (i in 1:nselected)
-{
-  sample_list[[i]] = rawdata[[i]]$ByChannel
-}
+abf_raw = abf2.load_in_folder(folder = "sample data/",
+                                filename_list = unlist(selected[, "FileName"]))
+abf_list = abf_raw
+abf_title = unlist(selected[, "FileName"])
 ```
+
 
 # Define “cursor” position
 When using clampfit.exe to acquire I V data, you need to bring one or two cursors to the appropriate position then click "tick".
@@ -263,153 +186,106 @@ When using clampfit.exe to acquire I V data, you need to bring one or two cursor
 We will do the same in R using either “automatic” or “manual” methods.
 
 ## Define “cursor” position: automatic
-In Clampex.exe, when setting protocol, you have defined the wave form:
 
-![](cursor position 1.png) 
-
-Use the time lengths, calculate TC in ms (milli seconds)
-
-![](cursor position 2.png) 
-
-
+###Auto method 1: Determine the most stable region (intervals) of the I and V waveforms
+Find the most stable interval and plot waveforms with intervals:
 ```{r}
-TC=Ttotal-TA-TB
+# Step 1: Find sampling intervals,
+intv_list = FindAllSamplingInterval(abf_list)
+# Step 2: plot the waveforms and the interval is between the 2 dash lines.
+PlotAll_IVChannelWithIntv(abf_list, intv_list, title_list = abf_title)
 ```
 
-If you want to acquire data from the final 1/5 of step B:
+- The mechanism of the above scripts:
 
-![](cursor position 3.png) 
+    - step 1: Extract your voltage settings and find the most stable interval
+        - The most stable region length is 10 ms by default.
+        - The most stable region must match the the voltage settings for the experiment +/- max 5% of your voltage step increment.
+            - Voltage setting for this sample experiment is: -120 -100  -80  -60  -40  -20    0   20   40   60   80 mV. voltage step increment is 20 mV.
+        - If you want the voltage error permit zone to be more than +/- max 5%, search the "FindAllSamplingInterval" function to see how to define the argument "allowed_voltage_delta".
+            
+    - step 2: plot the waveforms and the selected interval is between the 2 dash lines.
 
-
+- Another way of plotting:
 ```{r}
-# Theoretically you could define this factor anywhere between 0 to 1
-restric_factor=1/5
-# Then the restriction division factor could be calculated.
-  # You will know how this factor is used later
-restrict_div = 1/(TC/Ttotal+restric_factor*TB/Ttotal)
+# Alternatively, plot the same channel of all loaded files side by side with selected intervals 
+PlotAll_ChannelWithIntv(abf_list, intv_list, 1)
+PlotAll_ChannelWithIntv(abf_list, intv_list, 2)
 ```
 
-
-Run the following script to determine the most stable region (intervals) of the I and V waveforms:
-
-- The mechanism of the following scripts:
-    - step 1: Extract your voltage settings into voltage from rawdata
-        - e.g., the voltage settings for this sample experiment is: -120 -100  -80  -60  -40  -20    0   20   40   60   80
-    - step 2: Find the most stable region in the final 1/5 of step B:
-        - interval_pts: interval length = 150 points = 15 ms
-        - target_voltages: your voltage settings
-        - voltage_threshold: when your actual voltage is within +/- 3.0 mV from your voltage settings, find interval; otherwise, no interval will be found.
-        - restriction_div: use the factor restrict_div you calculated to tell the function that you want the interval to be within the final 1/5 of step B.
-    - step 3: plot the waveforms and the interval is between the 2 dash lines.
-    - step 4: record interval start point and end point. When interval cannot be determined, it will return NA.
+If you want to manually define interval for the 2nd oocyte:
 ```{r}
-intervals = data.frame()
-for (i in 1:nselected)
-{
-# step 1
-voltage = vclamp.voltage_setting(rawdata[[i]])
-# step 2
-t = vclamp.best_interval(sample_list[[i]], 
-                         interval_pts = 150, 
-                         current_chan_id = 1, 
-                         voltage_chan_id = 2, 
-                         target_voltages = voltage, 
-                         voltage_threshold = 3.0,
-                         restriction_div=restrict_div)
-# step 3
-vclamp.plot_interval(sample_list[[i]], t, xyinfo[[i]])
-  title(selected$OocyteNumber[i])
-# step 4
-intervals[i, 1] = t[1]
-intervals[i, 2] = t[2]
-}
-colnames(intervals) <- c("Start", "End")
-intervals
-```
-To manually define interval for the 2nd oocyte:
-```{r}
-# Define which sample is selected. E.g. for the 2nd oocyte, sampleid=2
-sampleid = 2
+# Define which sample is selected. E.g. for the 2nd file, sample_id = 2
+sample_id = 2
 # Define the start point and length of the interval
-IntervalStartTime = 6200
-IntervalLength = 150
-# Change the interval start and end point of the 2nd oocyte 
-intervals[sampleid, "Start"] = IntervalStartTime
-intervals[sampleid, "End"] = IntervalStartTime+IntervalLength
-# Plot to see if the interval is at a suitable position
-t = c(intervals[sampleid, "Start"], intervals[sampleid, "End"])
-vclamp.plot_interval(sample_list[[sampleid]], t, xyinfo[[sampleid]])
-intervals
+intv_start = 6200
+intv_length = 100
+# Change the interval of file 2 in the intv_list
+intv_list = ChangeInterval(intv_list, sample_id, intv_start, intv_length)
+# Plot to confirm change
+Plot_IVChannelWithIntv(abf_list[[sample_id]],intv_list[[sample_id]])
+```
+
+###Auto method 2: Backward search interval
+When current and voltage stability is not the priority, use backward search to find intervals at the end of the voltage step:
+```{r}
+intv_list = FindAllSamplingInterval(abf_list, backward_seach = TRUE)
+# Check new intervals on waveform plots
+PlotAll_ChannelWithIntv(abf_list, intv_list, 1)
+PlotAll_ChannelWithIntv(abf_list, intv_list, 2)
+intv_list
 ```
 
 ## Define “cursor” position: manual
 If you prefer to take I V data at the same time point for all oocytes, you can manually set the interval.
 
-To manually set the all interval start point to 620ms and plot intervals, run the following script:
+To manually set the all interval start point to 620 ms and plot intervals, run the following script:
 ```{r}
-IntervalStartTime = 6200
-IntervalLength = 150
-
-intervals = data.frame()
-for (i in 1:nselected)
-{
-  intervals[i, "Start"] = IntervalStartTime
-  intervals[i, "End"] = IntervalStartTime + IntervalLength
-  vclamp.plot_interval(sample_list[[i]], 
-                       c(intervals[i, "Start"], intervals[i, "End"]), 
-                       xyinfo[[i]])
-  title(selected$FileName[i])
+intv_start = 6200
+intv_length = 100
+#You can call a function to do this
+for (i in 1:nselected){
+  intv_list = ChangeInterval(intv_list, i, intv_start, intv_length)
 }
-intervals
+intv_list
 ```
 
 # I V data extraction
-Now we can extract mean I and V data between the "cursors" (interval).
-
 In this example, we would like to use the automatically defined intervals.
-- Therefore, we run auto define intervals again to reset intervals to auto values:
+- Therefore, we run Auto method 1 to define intervals again and to reset intervals to auto values:
 ```{r}
-intervals = data.frame()
-for (i in 1:nselected)
-{
-voltage = vclamp.voltage_setting(rawdata[[i]])
-t = vclamp.best_interval(sample_list[[i]], 
-                         150, 
-                         1, 
-                         2, 
-                         voltage, 
-                         3.0,
-                         restrict_div)
-vclamp.plot_interval(sample_list[[i]], t, xyinfo[[i]])
-  title(selected$OocyteNumber[i])
-intervals[i, 1] = t[1]
-intervals[i, 2] = t[2]
-}
-colnames(intervals) <- c("Start", "End")
-intervals
+intv_list = FindAllSamplingInterval(abf_list)
 ```
-
 
 When using Clampfit.exe to extract I and V data, usually the average values of the 2 cursors are taken.
 
-In this case study, we want to take the average values in the 15 ms (150 data points) selected interval.
+In this case study, we want to take the average values in the 10 ms (100 data points, default value) inside the selected interval.
 
 Calculate the mean V and I values between your two “cursors”:
 ```{r}
-voltagemeans = vclamp.channel_mean(sample_list, intervals, 2)
-currentmeans = vclamp.channel_mean(sample_list, intervals, 1)
+df_mean_voltage = AllSamples_VoltageMeans(abf_list, intv_list)
+df_mean_current = AllSamples_CurrentMeans(abf_list, intv_list)
 # Each row represents one of your 3 selected oocytes
-currentmeans
-# Interval for oocyte 2 was not defined using the parameters in auto define interval
-  # Therefore the results are returned as NA
+df_mean_current
+# When interval cannot be defined for an oocyte using the parameters in auto define interval functions,
+  # The results will be returned as NA
 ```
+
+Calculate the average V and I values (and SEM) for all 3 oocytes and combine these data into a list:
+```{r}
+df_summary = AllSamples_IVSummary(abf_list, intv_list)
+df_summary
+```
+
 Extract V and I values for each oocyte and combine into a list:
 ```{r}
-individuals = vclamp.individual_channel_mean(voltagemeans, currentmeans)
-# If you only want the current data of each oocyte:
+# 
+individuals = vclamp.individual_channel_mean(df_mean_voltage,
+                                             df_mean_current)
+# If you only want the I data of each oocyte:
 individualsI = vclamp.individual_IorV_mean(currentmeans)
 ```
-Calculate the average V and I values (and SEM) for all 3 oocytes and combine these data into a list:
+
 ```{r}
 # NA is automatically removed when calculating mean and SEM
 combined = vclamp.combine_channel_mean(voltagemeans, currentmeans)
