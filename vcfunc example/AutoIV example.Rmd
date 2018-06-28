@@ -44,7 +44,7 @@ Important information about the format of file index:
 - 4. Any of the column except for "FileName" can be left empty, when the experiment is not as complicated as the experiment in this case study.
 
 # AutoIV stage 1: user defined parameters
-```{r include=FALSE}
+```{r warning=FALSE}
 # Load packages
 library(tidyverse)
 library(abf2load)
@@ -60,7 +60,7 @@ C = c(21:37)
 N = c(1:20)
 
 # Define Gene and buffer (N or C) to be analysed
-  # For ALMT2 N buffers:
+  # For A2 N buffers:
 Gene = "A2"
 OocyteNo = N
 
@@ -111,7 +111,7 @@ for (idx in 1:length(BufferN)){
   
   ### Define “cursor” position using automatic most stable interval method
   intv_list = FindAllSamplingInterval(abf_list)
-  ### (Optional) Plot the waveforms, and the interval is between the 2 dash lines.
+  # Plot the waveforms, and the interval is between the 2 dash lines.
   if (enable_plot){
     p = PlotAll_IVChannelWithIntv(abf_list, intv_list, title_list = abf_title)
     print(p)
@@ -140,11 +140,11 @@ for (idx in 1:length(BufferN)){
 Only one processed data list is exported to .csv files in this example.
 
 - Data in .csv files can be copy and paste into other programs for graphing.
-```{r include=FALSE}
+```{r}
 ### Export the list containing currents of each oocyte to .csv files
 wd = getwd()
 for (i in 1:length(proc_nameA2N)){
-  filename = paste(wd, "I data ", 
+  filename = paste(wd, "/I data ", 
                   Gene, 
                   " ", 
                   BuffersN[[i]], 
@@ -156,7 +156,7 @@ for (i in 1:length(proc_nameA2N)){
 You can also export the other 3 data proc_ data lists to .csv files.
 
 # AutoIV stage 4: quick I V plot in R
-```{r}
+```{r echo=TRUE}
 # Use the list containing summary data, set name of each element to buffer names
 names(proc_meanVAA2N) = BuffersN
 # Plot
