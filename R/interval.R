@@ -41,6 +41,9 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
     interval_size <- floor(10 / abf$SampleInterval_ms)
 
   epoch_range <- ExpectedEpochRange(abf, epoch, voltage_chan_id, allowed_voltage_delta)
+  if (is.na(epoch_range[1]))
+    return(NA)
+  
   if (backward_seach) {
     nepoch <- length(epoch_range)
     nepoch_ptr <- floor(nepoch * (1.0 - 1.0/backward_search_ratio))
@@ -106,11 +109,14 @@ FindAllSamplingInterval <- function(abf_list, current_chan_id = 0, voltage_chan_
                                   allowed_voltage_delta = 0, epoch_name = "auto",
                                   backward_seach = FALSE, backward_search_ratio = 3) {
   intv <- list()
-  for (i in 1:length(abf_list))
+  for (i in 1:length(abf_list)) {
     intv[[i]] <- FindSamplingInterval(abf_list[[i]], current_chan_id, voltage_chan_id,
                                       interval_size, max_interval_expansion_rate,
                                       allowed_voltage_delta, epoch_name, backward_seach,
                                       backward_search_ratio)
+    if (is.na(intv[[i]][1]))
+      warning(paste0("Could not find proper sampling range from sample ", i))
+  }
 
   return(intv)
 }
@@ -157,7 +163,13 @@ ExpectedEpochRange <- function(abf, epoch, voltage_chan_id, allowed_voltage_delt
   allowed <- list()
   for (i in 1:length(target_v)) {
     tmp <- which(abs(abf$ByChannel[[voltage_chan_id]][, i] - target_v[i]) <= allowed_voltage_delta)
-    allowed[[i]] <- min(tmp):max(tmp)
+    if (length(tmp) < 2) {
+      #could not find proper searching range
+      warning(paste0("Could not find proper sampling range from episode ", i))
+      return(NA)
+    } else {
+      allowed[[i]] <- min(tmp):max(tmp)
+    }
   }
   epoch_range <- Reduce(f = intersect, x = allowed)
 
@@ -198,7 +210,7 @@ SimpleSd <- function(df, win) {
   data <- df[win, ]
   #Custom implementation for the missing colSds, may not be most effective
   ret <- colMeans(data * data) - colMeans(data)^2
-  ret <- sqrt(ret * n / (n -1))
+  ret <- sqrt(ret * n / (n - 1))
 
   return(ret)
 }
