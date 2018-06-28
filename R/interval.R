@@ -133,7 +133,7 @@ GetEpochId <- function(abf, epoch_name) {
 
   return(epoch)
 }
-DefaultAllowedVoltageDelta <- function(abf, epoch) abf$Sections$EpochPerDAC$fEpochLevelInc[epoch] * 0.05
+DefaultAllowedVoltageDelta <- function(abf, epoch) abs(abf$Sections$EpochPerDAC$fEpochLevelInc[epoch]) * 0.05
 
 #Calculate sampling window
 GetWindow <- function(search_range, incr_step, win_size, win_pos) {
