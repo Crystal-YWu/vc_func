@@ -43,7 +43,7 @@ FindSamplingInterval <- function(abf, current_chan_id = 0, voltage_chan_id = 0,
   epoch_range <- ExpectedEpochRange(abf, epoch, voltage_chan_id, allowed_voltage_delta)
   if (is.na(epoch_range[1]))
     return(NA)
-  
+
   if (backward_seach) {
     nepoch <- length(epoch_range)
     nepoch_ptr <- floor(nepoch * (1.0 - 1.0/backward_search_ratio))
@@ -115,7 +115,7 @@ FindAllSamplingInterval <- function(abf_list, current_chan_id = 0, voltage_chan_
                                       allowed_voltage_delta, epoch_name, backward_seach,
                                       backward_search_ratio)
     if (is.na(intv[[i]][1]))
-      warning(paste0("Could not find proper sampling range from sample ", i))
+      warning(paste0("Could not find proper sampling range from sample ", i, "\n"))
   }
 
   return(intv)
@@ -165,7 +165,7 @@ ExpectedEpochRange <- function(abf, epoch, voltage_chan_id, allowed_voltage_delt
     tmp <- which(abs(abf$ByChannel[[voltage_chan_id]][, i] - target_v[i]) <= allowed_voltage_delta)
     if (length(tmp) < 2) {
       #could not find proper searching range
-      warning(paste0("Could not find proper sampling range from episode ", i))
+      warning(paste0("Could not find proper sampling range from episode ", i, "\n"))
       return(NA)
     } else {
       allowed[[i]] <- min(tmp):max(tmp)
