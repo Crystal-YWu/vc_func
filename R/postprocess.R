@@ -84,10 +84,11 @@ AllSamples_IVSummary <- function(abf_list, intv_list) {
   df_current <- AllSamples_CurrentMeans(abf_list, intv_list, transpose = FALSE)
   df_voltage <- AllSamples_VoltageMeans(abf_list, intv_list, transpose = FALSE)
   col_mean_v <- colMeans(df_voltage, na.rm = TRUE)
-  col_sd_v <- colSds(df_voltage, na.rm = TRUE)
+  sqn <- sqrt(length(col_mean_v))
+  col_sem_v <- colSds(df_voltage, na.rm = TRUE) / sqn
   col_mean_i <- colMeans(df_current, na.rm = TRUE)
-  col_sd_i <- colSds(df_current, na.rm = TRUE)
-  df <- data.frame(col_mean_v, col_sd_v, col_mean_i, col_sd_i)
+  col_sem_i <- colSds(df_current, na.rm = TRUE) / sqn
+  df <- data.frame(col_mean_v, col_sem_v, col_mean_i, col_sem_i)
   colnames(df) <- c("Voltage", "SEM Voltage", "Current", "SEM Current")
 
   return(df)
